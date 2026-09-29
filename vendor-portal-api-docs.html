@@ -1633,9 +1633,113 @@
             <span class="s">"Partner not found"</span> }
           </div>
           <div class="callout">
-            <b>Adds one IP at a time &mdash; it never removes any.</b> There's
-            no "remove IP" endpoint yet; to remove an IP or fully reset a
-            partner's whitelist, contact VaMijo support.
+            <b>Adds one IP at a time &mdash; it never removes any.</b> Use
+            <a href="#ep-remove-allowed-ip">Remove allowed IP</a> to take one
+            off the list, or contact VaMijo support to fully reset a partner's
+            whitelist.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ep-remove-allowed-ip">
+      <div class="card">
+        <div class="head">
+          <span class="method delete">DELETE</span
+          ><span class="path">/vendorportal/allowed-ips</span>
+          <span class="auth-req">Bearer token</span>
+          <div class="desc">
+            Remove an IP address from a partner's <code>allowed_ips</code>
+            whitelist. Idempotent &mdash; removing an IP that isn't on the list
+            is a no-op, not an error. Also stamps the partner's
+            <code>status_reason</code> to <code>"IP address removed"</code>.
+          </div>
+        </div>
+        <div class="body">
+          <h4>Body parameters</h4>
+          <div class="twrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Type</th>
+                  <th></th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>partner_id</code></td>
+                  <td>integer</td>
+                  <td class="req">required</td>
+                  <td>The partner whose whitelist to update.</td>
+                </tr>
+                <tr>
+                  <td><code>ip</code></td>
+                  <td>string</td>
+                  <td class="req">required</td>
+                  <td>A single IPv4 or IPv6 address to remove.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Sample request</h4>
+          <div class="codeblock">
+            <button class="copy" data-copy="c9">Copy</button
+            ><span id="c9"
+              >curl -s -X DELETE
+              "https://admin.vamijogh.com/vendorportal/allowed-ips" \ -H
+              "Authorization: Bearer &lt;YOUR_API_TOKEN&gt;" \ -H "Content-Type:
+              application/json" \ -d '{ "partner_id": 42, "ip": "197.251.20.10"
+              }'</span
+            >
+          </div>
+
+          <div class="status-row">
+            <span class="status-chip ok">200</span
+            ><span class="status-label"
+              >IP removed from whitelist successfully</span
+            >
+          </div>
+          <div class="codeblock">
+            { <span class="k">"status"</span>: 200,
+            <span class="k">"message"</span>:
+            <span class="s">"IP removed from whitelist successfully"</span>,
+            <span class="k">"info"</span>: {
+            <span class="k">"allowed_ips"</span>: null } }
+          </div>
+
+          <div class="status-row">
+            <span class="status-chip ok">200</span
+            ><span class="status-label"
+              >the IP wasn't on the whitelist &mdash; not an error</span
+            >
+          </div>
+          <div class="codeblock">
+            { <span class="k">"status"</span>: 200,
+            <span class="k">"message"</span>:
+            <span class="s">"IP was not on the whitelist"</span>,
+            <span class="k">"info"</span>: {
+            <span class="k">"allowed_ips"</span>: null } }
+          </div>
+
+          <h4>Failure response</h4>
+          <div class="status-row">
+            <span class="status-chip err">404</span
+            ><span class="status-label">the partner doesn't exist</span>
+          </div>
+          <div class="codeblock">
+            { <span class="k">"status"</span>: 404,
+            <span class="k">"message"</span>:
+            <span class="s">"Partner not found"</span> }
+          </div>
+          <div class="callout">
+            <b>This also updates <code>status_reason</code>.</b> A successful
+            removal sets the partner's <code>status_reason</code> to
+            <code>"IP address removed"</code> &mdash; it does not change
+            <code>status</code> itself, only the reason field, so this is
+            visible on the partner's record without blocking their account.
           </div>
         </div>
       </div>
