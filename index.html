@@ -810,20 +810,13 @@
           <h4>Sample request</h4>
           <div class="codeblock">
             <button class="copy" data-copy="c1">Copy</button
-            ><span id="c1">const params = new URLSearchParams({
-  startDate: "2026-10-01",
-  endDate: "2026-10-15",
-  page: "1",
-  limit: "10",
-});
-
-const res = await fetch(
-  `https://admin.vamijogh.com/vendorportal/slots?${params}`,
-  {
-    headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;" },
-  }
-);
-const body = await res.json();</span
+            ><span id="c1"
+              >const params = new URLSearchParams({ startDate: "2026-10-01",
+              endDate: "2026-10-15", page: "1", limit: "10", }); const res =
+              await fetch(
+              `https://admin.vamijogh.com/vendorportal/slots?${params}`, {
+              headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;" }, } );
+              const body = await res.json();</span
             >
           </div>
 
@@ -938,25 +931,15 @@ const body = await res.json();</span
           <h4>Sample request</h4>
           <div class="codeblock">
             <button class="copy" data-copy="c2">Copy</button
-            ><span id="c2">const res = await fetch(
-  "https://admin.vamijogh.com/vendorportal/bookings",
-  {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      partner_id: 42,
-      slot_id: 42,
-      contact_name: "Jane Mensah",
-      contact_phone: "+233201234567",
-      contact_email: "jane.mensah@example.com",
-      notes: "First integration test session",
-    }),
-  }
-);
-const body = await res.json();</span
+            ><span id="c2"
+              >const res = await fetch(
+              "https://admin.vamijogh.com/vendorportal/bookings", { method:
+              "POST", headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
+              "Content-Type": "application/json", }, body: JSON.stringify({
+              partner_id: 42, slot_id: 42, contact_name: "Jane Mensah",
+              contact_phone: "+233201234567", contact_email:
+              "jane.mensah@example.com", notes: "First integration test
+              session", }), } ); const body = await res.json();</span
             >
           </div>
 
@@ -1091,20 +1074,12 @@ const body = await res.json();</span
           <h4>Sample request</h4>
           <div class="codeblock">
             <button class="copy" data-copy="c3">Copy</button
-            ><span id="c3">const params = new URLSearchParams({
-  partner_id: "42",
-  status: "SCHEDULED",
-  page: "1",
-  limit: "10",
-});
-
-const res = await fetch(
-  `https://admin.vamijogh.com/vendorportal/bookings?${params}`,
-  {
-    headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;" },
-  }
-);
-const body = await res.json();</span
+            ><span id="c3"
+              >const params = new URLSearchParams({ partner_id: "42", status:
+              "SCHEDULED", page: "1", limit: "10", }); const res = await fetch(
+              `https://admin.vamijogh.com/vendorportal/bookings?${params}`, {
+              headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;" }, } );
+              const body = await res.json();</span
             >
           </div>
 
@@ -1216,21 +1191,14 @@ const body = await res.json();</span
           <h4>Sample request</h4>
           <div class="codeblock">
             <button class="copy" data-copy="c4">Copy</button
-            ><span id="c4">const res = await fetch(
-  "https://admin.vamijogh.com/vendorportal/bookings/108/cancel",
-  {
-    method: "PATCH",
-    headers: {
-      Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      partner_id: 42,
-      cancel_reason: "Reschedule requested by partner",
-    }),
-  }
-);
-const body = await res.json();</span
+            ><span id="c4"
+              >const res = await fetch(
+              "https://admin.vamijogh.com/vendorportal/bookings/108/cancel", {
+              method: "PATCH", headers: { Authorization: "Bearer
+              &lt;YOUR_API_TOKEN&gt;", "Content-Type": "application/json", },
+              body: JSON.stringify({ partner_id: 42, cancel_reason: "Reschedule
+              requested by partner", }), } ); const body = await
+              res.json();</span
             >
           </div>
 
@@ -1311,22 +1279,13 @@ const body = await res.json();</span
           <h4>Sample request</h4>
           <div class="codeblock">
             <button class="copy" data-copy="c5">Copy</button
-            ><span id="c5">const res = await fetch(
-  "https://admin.vamijogh.com/vendorportal/waitlist",
-  {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      partner_id: 42,
-      requested_date: "2026-10-12",
-      notes: "Prefers a morning session",
-    }),
-  }
-);
-const body = await res.json();</span
+            ><span id="c5"
+              >const res = await fetch(
+              "https://admin.vamijogh.com/vendorportal/waitlist", { method:
+              "POST", headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
+              "Content-Type": "application/json", }, body: JSON.stringify({
+              partner_id: 42, requested_date: "2026-10-12", notes: "Prefers a
+              morning session", }), } ); const body = await res.json();</span
             >
           </div>
 
@@ -1451,20 +1410,12 @@ const body = await res.json();</span
           <h4>Sample request</h4>
           <div class="codeblock">
             <button class="copy" data-copy="c7">Copy</button
-            ><span id="c7">const params = new URLSearchParams({
-  partner_id: "42",
-  status: "WAITING",
-  page: "1",
-  limit: "10",
-});
-
-const res = await fetch(
-  `https://admin.vamijogh.com/vendorportal/waitlist?${params}`,
-  {
-    headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;" },
-  }
-);
-const body = await res.json();</span
+            ><span id="c7"
+              >const params = new URLSearchParams({ partner_id: "42", status:
+              "WAITING", page: "1", limit: "10", }); const res = await fetch(
+              `https://admin.vamijogh.com/vendorportal/waitlist?${params}`, {
+              headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;" }, } );
+              const body = await res.json();</span
             >
           </div>
 
@@ -1558,18 +1509,13 @@ const body = await res.json();</span
           <h4>Sample request</h4>
           <div class="codeblock">
             <button class="copy" data-copy="c8">Copy</button
-            ><span id="c8">const res = await fetch(
-  "https://admin.vamijogh.com/vendorportal/waitlist/17/cancel",
-  {
-    method: "PATCH",
-    headers: {
-      Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ partner_id: 42 }),
-  }
-);
-const body = await res.json();</span
+            ><span id="c8"
+              >const res = await fetch(
+              "https://admin.vamijogh.com/vendorportal/waitlist/17/cancel", {
+              method: "PATCH", headers: { Authorization: "Bearer
+              &lt;YOUR_API_TOKEN&gt;", "Content-Type": "application/json", },
+              body: JSON.stringify({ partner_id: 42 }), } ); const body = await
+              res.json();</span
             >
           </div>
 
@@ -1650,18 +1596,13 @@ const body = await res.json();</span
           <h4>Sample request</h4>
           <div class="codeblock">
             <button class="copy" data-copy="c6">Copy</button
-            ><span id="c6">const res = await fetch(
-  "https://admin.vamijogh.com/vendorportal/allowed-ips",
-  {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ partner_id: 42, ip: "197.251.20.10" }),
-  }
-);
-const body = await res.json();</span
+            ><span id="c6"
+              >const res = await fetch(
+              "https://admin.vamijogh.com/vendorportal/allowed-ips", { method:
+              "POST", headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
+              "Content-Type": "application/json", }, body: JSON.stringify({
+              partner_id: 42, ip: "197.251.20.10" }), } ); const body = await
+              res.json();</span
             >
           </div>
 
@@ -1760,18 +1701,13 @@ const body = await res.json();</span
           <h4>Sample request</h4>
           <div class="codeblock">
             <button class="copy" data-copy="c9">Copy</button
-            ><span id="c9">const res = await fetch(
-  "https://admin.vamijogh.com/vendorportal/allowed-ips",
-  {
-    method: "DELETE",
-    headers: {
-      Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ partner_id: 42, ip: "197.251.20.10" }),
-  }
-);
-const body = await res.json();</span
+            ><span id="c9"
+              >const res = await fetch(
+              "https://admin.vamijogh.com/vendorportal/allowed-ips", { method:
+              "DELETE", headers: { Authorization: "Bearer
+              &lt;YOUR_API_TOKEN&gt;", "Content-Type": "application/json", },
+              body: JSON.stringify({ partner_id: 42, ip: "197.251.20.10" }), }
+              ); const body = await res.json();</span
             >
           </div>
 
@@ -1887,7 +1823,7 @@ const body = await res.json();</span
     </section>
 
     <section id="waitlist-status">
-      <h2><span class="num">06</span>Waitlist status values</h2>
+      <h2><span class="num">06</span>Wait list status values</h2>
       <p>
         The <code>status</code> field returned by
         <a href="#ep-list-waitlist">List waitlist requests</a> moves through one
