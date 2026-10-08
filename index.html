@@ -573,7 +573,7 @@
     <div class="brand">
       <div class="mark">VP</div>
       <div class="name">
-        Vendor Portal API<small>Demo/UAT Booking Reference</small>
+        Vendor Portal API<small>Demo/UAT &amp; Credentials Reference</small>
       </div>
     </div>
     <nav class="toc">
@@ -604,6 +604,9 @@
       <a href="#ep-remove-allowed-ip"
         ><span class="m delete">DELETE</span>Remove allowed IP</a
       >
+      <a href="#ep-credentials"
+        ><span class="m post">POST</span>Generate API credentials</a
+      >
       <div class="grp">Reference</div>
       <a href="#booking-status"><span class="m"></span>Booking status values</a>
       <a href="#waitlist-status"
@@ -622,14 +625,17 @@
         book and cancel sessions on behalf of a delivery partner, review a
         partner's booking history, and join the waitlist when no slot is open.
         Every partner must complete a Demo/UAT session and receive an
-        <b>Approved</b> decision from VaMijo before live API credentials are
-        issued.
+        <b>Approved</b> decision from VaMijo before they can generate live API
+        credentials.
       </p>
       <div class="meta">
         <span class="pill"
           >Base URL <b>https://admin.vamijogh.com/vendorportal</b></span
         >
-        <span class="pill">Auth <b>Bearer static token</b></span>
+        <span class="pill"
+          >Auth <b>Static token</b> &middot; <b>partner session</b> for
+          credentials</span
+        >
         <span class="pill">Format <b>application/json</b></span>
       </div>
     </div>
@@ -640,25 +646,38 @@
         The Vendor Portal API is a small, purpose-built surface for one job:
         getting a delivery partner through their Demo/UAT session. It does not
         expose ride, delivery, or wallet data &mdash; only Demo/UAT slots,
-        bookings, and the waitlist. All five endpoints live under a single base
-        path and share one authentication scheme.
+        bookings, the waitlist, the partner's IP whitelist, and generating the
+        partner's API credentials. Every endpoint lives under
+        <code>/vendorportal</code> and uses the shared static token,
+        <b>except</b> <a href="#ep-credentials">Generate API credentials</a>,
+        which lives under <code>/partneruat</code> and uses the signed-in
+        partner's own session token.
       </p>
       <div class="callout">
         <b>Who calls this API:</b> the Vendor Portal backend, on behalf of
-        whichever delivery partner is currently signed in there. This API is not
-        partner-session aware &mdash; every request must state which partner
-        it's acting for by passing <code>partner_id</code> explicitly.
+        whichever delivery partner is currently signed in there. The
+        <code>/vendorportal</code> endpoints are not partner-session aware
+        &mdash; every request must state which partner it's acting for by
+        passing <code>partner_id</code> explicitly. The credentials endpoint is
+        the opposite: it takes no <code>partner_id</code> and always acts for
+        the partner the session token belongs to.
       </div>
     </section>
 
     <section id="auth">
       <h2><span class="num">02</span>Authentication</h2>
       <p>
-        Every request must include a static bearer token in the
-        <code>Authorization</code> header. VaMijo issues this token to the
-        Vendor Portal team out of band &mdash; it is shared across all requests
-        and is not specific to any one partner, which is why
-        <code>partner_id</code> is a required field on every endpoint below.
+        There are two schemes. Both send a bearer token in the
+        <code>Authorization</code> header.
+      </p>
+      <h3 class="sub">
+        Static API token &mdash; all <code>/vendorportal</code> endpoints
+      </h3>
+      <p>
+        VaMijo issues this token to the Vendor Portal team out of band &mdash;
+        it is shared across all requests and is not specific to any one partner,
+        which is why <code>partner_id</code> is a required field on these
+        endpoints.
       </p>
       <div class="codeblock">
         Authorization: Bearer <span class="s">&lt;YOUR_API_TOKEN&gt;</span>
@@ -676,6 +695,70 @@
         envelope described below &mdash; it is rejected by the authentication
         layer before your request reaches the API itself. Check for it before
         attempting to parse the body as JSON.
+      </div>
+
+      <h3 class="sub">
+        Partner session token &mdash; <code>/partneruat/credentials</code>
+      </h3>
+      <p>
+        The token the partner received when they signed in to the developer
+        portal with their phone number and OTP. Pass it through unchanged; the
+        partner is identified from the token itself, so one partner can never
+        generate or replace another partner's credentials.
+      </p>
+      <div class="codeblock">
+        Authorization: Bearer
+        <span class="s">&lt;PARTNER_SESSION_TOKEN&gt;</span>
+      </div>
+      <h3 class="sub">Failure responses</h3>
+      <div class="twrap">
+        <table>
+          <thead>
+            <tr>
+              <th>HTTP status</th>
+              <th>Body (plain text)</th>
+              <th>Cause</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="status-chip err">401</span></td>
+              <td>
+                <code
+                  >Sign in required. Send the dashboard token as 'Authorization:
+                  Bearer &lt;token&gt;'.</code
+                >
+              </td>
+              <td>No bearer token sent</td>
+            </tr>
+            <tr>
+              <td><span class="status-chip err">401</span></td>
+              <td><code>Unauthorized Access</code></td>
+              <td>
+                Token invalid or expired, or the session was signed out or
+                revoked &mdash; send the partner back to sign in
+              </td>
+            </tr>
+            <tr>
+              <td><span class="status-chip err">403</span></td>
+              <td>
+                <code
+                  >This partner account is &lt;STATUS&gt;. Please contact VaMijo
+                  support.</code
+                >
+              </td>
+              <td>
+                The partner's account isn't <code>ACTIVE</code>. Their session
+                is also revoked, so they'll need to sign in again once it is.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        Like the static-token 401, these are
+        <b>plain text with a real HTTP status code</b>, not the JSON envelope.
+        Check <code>res.ok</code> before calling <code>res.json()</code>.
       </div>
     </section>
 
@@ -716,6 +799,14 @@
               <td><span class="status-chip err">400</span></td>
               <td>Validation error</td>
               <td>A required field is missing or the wrong type</td>
+            </tr>
+            <tr>
+              <td><span class="status-chip err">403</span></td>
+              <td>Not allowed</td>
+              <td>
+                The partner isn't eligible for the action yet &mdash; e.g. no
+                Approved UAT decision when requesting live credentials
+              </td>
             </tr>
             <tr>
               <td><span class="status-chip err">404</span></td>
@@ -1760,6 +1851,160 @@
       </div>
     </section>
 
+    <section id="ep-credentials">
+      <div class="card">
+        <div class="head">
+          <span class="method post">POST</span
+          ><span class="path">/partneruat/credentials</span>
+          <span class="auth-req">Partner session token</span>
+          <div class="desc">
+            Generate the signed-in partner's <b>test</b> (sandbox) or
+            <b>live</b> API credentials. Credentials are not sent by email on
+            approval &mdash; the partner requests them here. Generating again
+            replaces the existing key and secret for that environment
+            immediately; the other environment's pair is untouched.
+          </div>
+        </div>
+        <div class="body">
+          <div class="callout">
+            <b> Different base path and auth from every other endpoint.</b> Call
+            <code>https://admin.vamijogh.com/partneruat/credentials</code> with
+            the partner's own session token (see
+            <a href="#auth">Authentication</a>), not the static API token. There
+            is no <code>partner_id</code> field &mdash; the partner is taken
+            from the token.
+          </div>
+
+          <h4>Body parameters</h4>
+          <div class="twrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Type</th>
+                  <th></th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>environment</code></td>
+                  <td>string</td>
+                  <td class="req">required</td>
+                  <td>
+                    <code>"test"</code> or <code>"live"</code>. Test keys are
+                    prefixed <code>vmj_test_</code>, live keys
+                    <code>vmj_live_</code>.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Eligibility</h4>
+          <div class="twrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Environment</th>
+                  <th>Requires</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>test</code></td>
+                  <td>
+                    The partner's account is <code>ACTIVE</code> (checked when
+                    the session token is validated).
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>live</code></td>
+                  <td>
+                    Account is <code>ACTIVE</code> <b>and</b> the partner's most
+                    recent UAT decision is <code>APPROVED</code> (see
+                    <a href="#booking-status">Booking status values</a>).
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>Sample request</h4>
+          <div class="codeblock">
+            <button class="copy" data-copy="c10">Copy</button
+            ><span id="c10"
+              >const res = await fetch(
+              "https://admin.vamijogh.com/partneruat/credentials", { method:
+              "POST", headers: { Authorization: "Bearer
+              &lt;PARTNER_SESSION_TOKEN&gt;", "Content-Type":
+              "application/json", }, body: JSON.stringify({ environment: "test"
+              }), } ); if (!res.ok) { /* 401/403 plain text - see Authentication
+              */ } const body = await res.json();</span
+            >
+          </div>
+
+          <div class="status-row">
+            <span class="status-chip ok">200</span
+            ><span class="status-label">credentials generated</span>
+          </div>
+          <div class="codeblock">
+            { <span class="k">"status"</span>: 200,
+            <span class="k">"message"</span>:
+            <span class="s"
+              >"Credentials generated successfully. Copy your secret now - it
+              will not be shown again."</span
+            >, <span class="k">"info"</span>: {
+            <span class="k">"environment"</span>: <span class="s">"test"</span>,
+            <span class="k">"api_key"</span>:
+            <span class="s">"vmj_test_3f9a…"</span>,
+            <span class="k">"api_secret"</span>:
+            <span class="s">"8c21d0…"</span> } }
+          </div>
+
+          <h4>Failure responses</h4>
+          <div class="status-row">
+            <span class="status-chip err">403</span
+            ><span class="status-label"
+              ><code>live</code> requested without an Approved UAT
+              decision</span
+            >
+          </div>
+          <div class="codeblock">
+            { <span class="k">"status"</span>: 403,
+            <span class="k">"message"</span>:
+            <span class="s"
+              >"Live credentials are only available once your Demo/UAT session
+              has been approved"</span
+            >
+            }
+          </div>
+          <div class="status-row">
+            <span class="status-chip err">400</span
+            ><span class="status-label"
+              ><code>environment</code> missing or not <code>"test"</code>/<code
+                >"live"</code
+              ></span
+            >
+          </div>
+          <p>
+            A missing, invalid, or revoked session token, or an account that
+            isn't <code>ACTIVE</code>, is rejected before reaching this endpoint
+            with a plain-text <code>401</code>/<code>403</code> &mdash; see
+            <a href="#auth">Authentication</a>.
+          </p>
+
+          <div class="callout">
+            <b>The secret is only returned once.</b> VaMijo stores just a hash
+            of <code>api_secret</code>, so it can't be retrieved later &mdash;
+            display it to the partner immediately with a copy option. If it's
+            lost, call this endpoint again to generate a replacement (which
+            invalidates the previous pair for that environment).
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="booking-status">
       <h2><span class="num">05</span>Booking status values</h2>
       <p>
@@ -1815,8 +2060,9 @@
       </div>
       <div class="callout">
         <b>Live API credentials are gated on this status</b>, not on booking
-        existence alone: only an <code>APPROVED</code> decision unlocks a
-        partner's live <code>api_key</code>/<code>api_secret</code>. A completed
+        existence alone: only an <code>APPROVED</code> decision lets a partner
+        generate live credentials via
+        <a href="#ep-credentials">Generate API credentials</a>. A completed
         session with no decision yet, or any outcome other than Approved, means
         the partner is still blocked from going live.
       </div>
