@@ -633,8 +633,7 @@
           >Base URL <b>https://admin.vamijogh.com/vendorportal</b></span
         >
         <span class="pill"
-          >Auth <b>Static token</b> &middot; <b>partner session</b> for
-          credentials</span
+          >Auth <b>Static token</b></span
         >
         <span class="pill">Format <b>application/json</b></span>
       </div>
@@ -648,31 +647,22 @@
         expose ride, delivery, or wallet data &mdash; only Demo/UAT slots,
         bookings, the waitlist, the partner's IP whitelist, and generating the
         partner's API credentials. Every endpoint lives under
-        <code>/vendorportal</code> and uses the shared static token,
-        <b>except</b> <a href="#ep-credentials">Generate API credentials</a>,
-        which lives under <code>/partneruat</code> and uses the signed-in
-        partner's own session token.
+        <code>/vendorportal</code> and uses the shared static token.
       </p>
       <div class="callout">
         <b>Who calls this API:</b> the Vendor Portal backend, on behalf of
-        whichever delivery partner is currently signed in there. The
-        <code>/vendorportal</code> endpoints are not partner-session aware
-        &mdash; every request must state which partner it's acting for by
-        passing <code>partner_id</code> explicitly. The credentials endpoint is
-        the opposite: it takes no <code>partner_id</code> and always acts for
-        the partner the session token belongs to.
+        whichever delivery partner is currently signed in there. The endpoints
+        are not partner-session aware &mdash; every request must state which
+        partner it's acting for by passing <code>partner_id</code> explicitly.
       </div>
     </section>
 
     <section id="auth">
       <h2><span class="num">02</span>Authentication</h2>
       <p>
-        There are two schemes. Both send a bearer token in the
+        Every endpoint uses a static API token, sent as a bearer token in the
         <code>Authorization</code> header.
       </p>
-      <h3 class="sub">
-        Static API token &mdash; all <code>/vendorportal</code> endpoints
-      </h3>
       <p>
         VaMijo issues this token to the Vendor Portal team out of band &mdash;
         it is shared across all requests and is not specific to any one partner,
@@ -695,70 +685,6 @@
         envelope described below &mdash; it is rejected by the authentication
         layer before your request reaches the API itself. Check for it before
         attempting to parse the body as JSON.
-      </div>
-
-      <h3 class="sub">
-        Partner session token &mdash; <code>/partneruat/credentials</code>
-      </h3>
-      <p>
-        The token the partner received when they signed in to the developer
-        portal with their phone number and OTP. Pass it through unchanged; the
-        partner is identified from the token itself, so one partner can never
-        generate or replace another partner's credentials.
-      </p>
-      <div class="codeblock">
-        Authorization: Bearer
-        <span class="s">&lt;PARTNER_SESSION_TOKEN&gt;</span>
-      </div>
-      <h3 class="sub">Failure responses</h3>
-      <div class="twrap">
-        <table>
-          <thead>
-            <tr>
-              <th>HTTP status</th>
-              <th>Body (plain text)</th>
-              <th>Cause</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><span class="status-chip err">401</span></td>
-              <td>
-                <code
-                  >Sign in required. Send the dashboard token as 'Authorization:
-                  Bearer &lt;token&gt;'.</code
-                >
-              </td>
-              <td>No bearer token sent</td>
-            </tr>
-            <tr>
-              <td><span class="status-chip err">401</span></td>
-              <td><code>Unauthorized Access</code></td>
-              <td>
-                Token invalid or expired, or the session was signed out or
-                revoked &mdash; send the partner back to sign in
-              </td>
-            </tr>
-            <tr>
-              <td><span class="status-chip err">403</span></td>
-              <td>
-                <code
-                  >This partner account is &lt;STATUS&gt;. Please contact VaMijo
-                  support.</code
-                >
-              </td>
-              <td>
-                The partner's account isn't <code>ACTIVE</code>. Their session
-                is also revoked, so they'll need to sign in again once it is.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="callout">
-        Like the static-token 401, these are
-        <b>plain text with a real HTTP status code</b>, not the JSON envelope.
-        Check <code>res.ok</code> before calling <code>res.json()</code>.
       </div>
     </section>
 
@@ -1855,26 +1781,18 @@
       <div class="card">
         <div class="head">
           <span class="method post">POST</span
-          ><span class="path">/partneruat/credentials</span>
-          <span class="auth-req">Partner session token</span>
+          ><span class="path">/vendorportal/credentials</span>
+          <span class="auth-req">Bearer token</span>
           <div class="desc">
-            Generate the signed-in partner's <b>test</b> (sandbox) or
-            <b>live</b> API credentials. Credentials are not sent by email on
-            approval &mdash; the partner requests them here. Generating again
-            replaces the existing key and secret for that environment
-            immediately; the other environment's pair is untouched.
+            Generate a partner's <b>test</b> (sandbox) or <b>live</b> API
+            credentials. Credentials are not sent by email on approval &mdash;
+            the partner requests them through the Vendor Portal, which calls
+            this endpoint. Generating again replaces the existing key and secret
+            for that environment immediately; the other environment's pair is
+            untouched.
           </div>
         </div>
         <div class="body">
-          <div class="callout">
-            <b> Different base path and auth from every other endpoint.</b> Call
-            <code>https://admin.vamijogh.com/partneruat/credentials</code> with
-            the partner's own session token (see
-            <a href="#auth">Authentication</a>), not the static API token. There
-            is no <code>partner_id</code> field &mdash; the partner is taken
-            from the token.
-          </div>
-
           <h4>Body parameters</h4>
           <div class="twrap">
             <table>
@@ -1887,6 +1805,12 @@
                 </tr>
               </thead>
               <tbody>
+                <tr>
+                  <td><code>partner_id</code></td>
+                  <td>integer</td>
+                  <td class="req">required</td>
+                  <td>The partner to generate credentials for.</td>
+                </tr>
                 <tr>
                   <td><code>environment</code></td>
                   <td>string</td>
@@ -1913,10 +1837,7 @@
               <tbody>
                 <tr>
                   <td><code>test</code></td>
-                  <td>
-                    The partner's account is <code>ACTIVE</code> (checked when
-                    the session token is validated).
-                  </td>
+                  <td>The partner's account is <code>ACTIVE</code>.</td>
                 </tr>
                 <tr>
                   <td><code>live</code></td>
@@ -1935,12 +1856,11 @@
             <button class="copy" data-copy="c10">Copy</button
             ><span id="c10"
               >const res = await fetch(
-              "https://admin.vamijogh.com/partneruat/credentials", { method:
-              "POST", headers: { Authorization: "Bearer
-              &lt;PARTNER_SESSION_TOKEN&gt;", "Content-Type":
-              "application/json", }, body: JSON.stringify({ environment: "test"
-              }), } ); if (!res.ok) { /* 401/403 plain text - see Authentication
-              */ } const body = await res.json();</span
+              "https://admin.vamijogh.com/vendorportal/credentials", { method:
+              "POST", headers: { Authorization: "Bearer &lt;YOUR_API_TOKEN&gt;",
+              "Content-Type": "application/json", }, body: JSON.stringify({
+              partner_id: 42, environment: "test" }), } ); const body = await
+              res.json();</span
             >
           </div>
 
@@ -1982,17 +1902,34 @@
           <div class="status-row">
             <span class="status-chip err">400</span
             ><span class="status-label"
-              ><code>environment</code> missing or not <code>"test"</code>/<code
-                >"live"</code
-              ></span
+              ><code>partner_id</code> missing, or <code>environment</code>
+              missing or not <code>"test"</code>/<code>"live"</code></span
             >
           </div>
-          <p>
-            A missing, invalid, or revoked session token, or an account that
-            isn't <code>ACTIVE</code>, is rejected before reaching this endpoint
-            with a plain-text <code>401</code>/<code>403</code> &mdash; see
-            <a href="#auth">Authentication</a>.
-          </p>
+          <div class="status-row">
+            <span class="status-chip err">404</span
+            ><span class="status-label">the partner doesn't exist</span>
+          </div>
+          <div class="codeblock">
+            { <span class="k">"status"</span>: 404,
+            <span class="k">"message"</span>:
+            <span class="s">"Partner not found"</span> }
+          </div>
+          <div class="status-row">
+            <span class="status-chip err">403</span
+            ><span class="status-label"
+              >the partner's account isn't <code>ACTIVE</code></span
+            >
+          </div>
+          <div class="codeblock">
+            { <span class="k">"status"</span>: 403,
+            <span class="k">"message"</span>:
+            <span class="s"
+              >"This partner account is SUSPENDED. Please contact VaMijo
+              support."</span
+            >
+            }
+          </div>
 
           <div class="callout">
             <b>The secret is only returned once.</b> VaMijo stores just a hash
